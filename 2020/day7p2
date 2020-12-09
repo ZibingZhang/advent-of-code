@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+"""
+--- Part Two ---
+
+It's getting pretty expensive to fly these days - not because of ticket prices, but because of the ridiculous number of bags you need to buy!
+
+Consider again your shiny gold bag and the rules from the above example:
+
+    faded blue bags contain 0 other bags.
+    dotted black bags contain 0 other bags.
+    vibrant plum bags contain 11 other bags: 5 faded blue bags and 6 dotted black bags.
+    dark olive bags contain 7 other bags: 3 faded blue bags and 4 dotted black bags.
+
+So, a single shiny gold bag must contain 1 dark olive bag (and the 7 bags within it) plus 2 vibrant plum bags (and the 11 bags within each of those): 1 + 1*7 + 2 + 2*11 = 32 bags!
+
+Of course, the actual rules have a small chance of going several levels deeper than this example; be sure to count all of the bags, even if the nesting becomes topologically impractical!
+
+Here's another example:
+
+shiny gold bags contain 2 dark red bags.
+dark red bags contain 2 dark orange bags.
+dark orange bags contain 2 dark yellow bags.
+dark yellow bags contain 2 dark green bags.
+dark green bags contain 2 dark blue bags.
+dark blue bags contain 2 dark violet bags.
+dark violet bags contain no other bags.
+
+In this example, a single shiny gold bag must contain 126 other bags.
+
+How many individual bags are required inside your single shiny gold bag?
+"""
+import re
+
+
+def main(text):
+    rules = text.split('\n')
+    contained_in = {}
+    for rule in rules:
+        if re.search('no other bags', rule):
+            continue
+        match = re.search('(.* .*) bags contain (?:(\d .* .*) bags?[, ]?)+.', rule)
+        container = match.group(1)
+        contains = re.split(' bags?, ', match.group(2))
+        mapping = contained_in.get(container, {})
+        if len(mapping) == 0:
+            contained_in[container] = mapping
+        for container in contains:
+            count, bag = container.split(' ', 1)
+            mapping[bag] = int(count)
+
+    return contained_by('shiny gold', contained_in) - 1
+    
+
+def contained_by(name, contained_in):
+    containers = contained_in.get(name)
+    if containers is None:
+        return 1
+    total = 1
+    for container, count in containers.items():
+        total += count * contained_by(container, contained_in)
+    return total
+
+
+if __name__ == '__main__':
+    with open('day7input') as f:
+        print(main(f.read()[:-1]))
