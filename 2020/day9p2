@@ -1,0 +1,77 @@
+#!/usr/bin/env python3
+"""
+--- Part Two ---
+
+The final step in breaking the XMAS encryption relies on the invalid number you just found: you must find a contiguous set of at least two numbers in your list which sum to the invalid number from step 1.
+
+Again consider the above example:
+
+35
+20
+15
+25
+47
+40
+62
+55
+65
+95
+102
+117
+150
+182
+127
+219
+299
+277
+309
+576
+
+In this list, adding up all of the numbers from 15 through 40 produces the invalid number from step 1, 127. (Of course, the contiguous set of numbers in your actual list might be much longer.)
+
+To find the encryption weakness, add together the smallest and largest number in this contiguous range; in this example, these are 15 and 47, producing 62.
+
+What is the encryption weakness in your XMAS-encrypted list of numbers?
+"""
+def main(text):
+    numbers = list(map(int, text.split('\n')))
+    total = numbers[0]
+    start = 0
+    end = 0
+    invalid_number = invalid(numbers)
+    
+    while total != invalid_number:
+        if total > invalid_number:
+            total -= numbers[start]
+            start += 1
+        elif total < invalid_number:
+            end += 1
+            total += numbers[end]
+    
+    return min(numbers[start:end+1]) + max(numbers[start:end+1])
+
+
+def invalid(numbers):
+    first = numbers[:25]
+    combinations = {n: {n + i for i in first if n != i} for n in first}
+
+    for idx, n in enumerate(numbers[25:]):
+        for combo in combinations.values():
+            if n in combo:
+                break
+        else:
+            return n
+
+        to_remove = numbers[idx]
+        del combinations[to_remove]
+        new_set = set()
+        for m, combos in combinations.items():
+            combos.remove(to_remove + m)
+            combos.add(n + m)
+            new_set.add(n + m)
+        combinations[n] = new_set
+
+
+if __name__ == '__main__':
+    with open('day9input') as f:
+        print(main(f.read()[:-1]))
