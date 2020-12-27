@@ -135,7 +135,6 @@ def occupied(layout, row, column):
     return total
 
 
-
 if __name__ == '__main__':
     with open('day11input') as f:
         print(main(f.read()[:-1]))
